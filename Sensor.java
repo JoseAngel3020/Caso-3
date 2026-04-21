@@ -19,7 +19,7 @@ public class Sensor extends Thread {
     }
 
     //configura valores para uso de creacion de sensores y eventos
-    public void configurarClase(int numBase, int numServidores) {
+    public static void configurarClase(int numBase, int numServidores) {
         Sensor.numBaseEventos = numBase;
         Sensor.numServidores = numServidores;
     }

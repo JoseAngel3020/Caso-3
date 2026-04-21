@@ -17,7 +17,7 @@ public class Servidor extends Thread {
         while (true) {
             Evento evento = buzonConsolidacion.sacarEvento();
 
-            if (evento.esFin()) {
+            if (evento.check()) {
                 System.out.println("Servidor " + id + " termina.");
                 break;
             }
@@ -31,7 +31,7 @@ public class Servidor extends Thread {
             int tiempo = 100 + random.nextInt(901);
 
             System.out.println("Servidor " + id +
-                    " procesando evento tipo " + evento.getTipo() +
+                    " procesando evento tipo " + evento.getTipoServidor() +
                     " durante " + tiempo + " ms");
 
             Thread.sleep(tiempo);

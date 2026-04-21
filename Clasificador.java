@@ -25,7 +25,7 @@ public class Clasificador extends Thread {
             Evento evento = buzonClasificacion.sacarEvento();
 
             // Evento de fin
-            if (evento.esFin()) {
+            if (evento.check()) {
                 manejarFin();
                 break;
             }
@@ -35,7 +35,7 @@ public class Clasificador extends Thread {
     }
 
     private void procesarEvento(Evento evento) {
-        int tipo = evento.getTipo(); // valor entre 1 y ns
+        int tipo = evento.getTipoServidor(); // valor entre 1 y ns
         int indiceServidor = tipo - 1;
 
         buzonesServidores[indiceServidor].agregarEvento(evento);
@@ -48,7 +48,8 @@ public class Clasificador extends Thread {
             if (terminados == totalClasificadores) {
                 // Último clasificador
                 for (int i = 0; i < totalServidores; i++) {
-                    buzonesServidores[i].agregarEvento(Evento.fin());
+                    Evento eventoFin = new Evento(i, -1);
+                    buzonesServidores[i].agregarEvento(eventoFin);
                 }
             }
         }
