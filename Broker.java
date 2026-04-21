@@ -1,15 +1,63 @@
-/*
-o Lee los eventos uno por uno y determina si son normales o representan alguna
-anomalía en el comportamiento esperado.
-o En este caso vamos a simular la presencia de eventos anómalos con base en un
-número generado seudoaleatoriamente. Por cada evento revisado, el bróker
-genera un número entre 0 y 200, si el número es múltiplo de 8, el evento es
-considerado anómalo y enviado al buzón de alertas, si no el evento es
-considerado normal y enviado al buzón para clasificación.
-o Cuando todos los eventos esperados han sido generados por los sensores, el
-bróker envía un evento de fin al administrador. Esto significa que el bróker debe
-conocer el número total de eventos esperados. 
- */
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Broker extends Thread {
+
+    private int id; 
+    private BuzonEntrada buzonEntradaEventos;
+    private final int totalEventos;
+
+    private BuzonAlerta buzonAlertas;
+    private BuzonClasificacion buzonClasificacion;
+
+    public Broker(int id, int ne, int ni, BuzonEntrada buzonEntradaEventos , BuzonAlerta buzonAlertas, BuzonClasificacion buzonClasificacion) {
+        this.id = id;
+        this.totalEventos = ne * (ni * (ni + 1) / 2);
+        this.buzonEntradaEventos = buzonEntradaEventos;
+        this.buzonAlertas = buzonAlertas;
+        this.buzonClasificacion = buzonClasificacion;
+    }
+
+    public void ProcesarEvento(Evento evento) {
+       if (esAnomalo()) {
     
+            buzonAlertas.agregarEvento(evento);
+
+        } else {
+            
+            while (buzonClasificacion.estaLleno()) {
+                Thread.yield();
+            }
+            buzonClasificacion.agregarEvento(evento);
+        }
+    }
+
+    public boolean esAnomalo() {
+        int numero =ThreadLocalRandom.current().nextInt(0, 200);
+        return numero % 8 == 0;
+    }
+
+    @Override
+    public void run() {
+        int eventosProcessados = 0;
+
+        while (eventosProcessados < totalEventos) {
+            
+            while (buzonEntradaEventos.estaVacio()) {
+                try {
+                    wait();
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+            Evento evento = buzonEntradaEventos.sacarEvento();
+            ProcesarEvento(evento);
+            eventosProcessados++;
+        }
+        System.out.println("=== BROKER: " + id + " termino su ejecuccion ===");
+        
+    }
 }
+
+
+

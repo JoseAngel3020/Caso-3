@@ -1,18 +1,56 @@
-/*
-o Lee los eventos sospechosos del buzón de alertas y determina si el
-comportamiento anómalo es efectivamente un problema o solo un evento fuera de
-lo común pero inofensivo.
-o Vamos a simular la presencia de eventos sospechosos pero inofensivos por medio
-de un número seudoaleatorio. Por cada evento analizado el administrador genera
-un número entre 0 y 20. Si el número es múltiplo de 4, el evento es considerado
-normal y enviado al buzón para clasificación, si no el evento es descartado. Tenga
-en cuenta que en este caso estamos descartando las alertas confirmadas, pero en
-un contexto real, el administrador y la organización deben manejar las alertas
-confirmadas de forma apropiada.
-o Cuando recibe el evento de fin termina. Pero antes de terminar, debe avisar a los
-clasificadores que deben terminar, para esto debe crear y depositar nc eventos de
-fin en el buzón para clasificación (uno por clasificador).
- */
+
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Administrador extends Thread {
+    private int id;
+    private BuzonAlerta buzonAlertas;
+    private BuzonClasificacion buzonClasificacion;
+
+    public Administrador(int id, BuzonAlerta buzonAlertas, BuzonClasificacion buzonClasificacion) {
+        this.id = id;
+        this.buzonAlertas = buzonAlertas;
+        this.buzonClasificacion = buzonClasificacion;
+    }
+
+
+
+    public void EnviarEvento(Evento evento) {
+
+        if(esNormal()){
+
+            while (buzonClasificacion.estaLleno()) {
+                Thread.yield();
+            }
+            buzonClasificacion.agregarEvento(evento);
+        }
+        //si no cumple la condicion se descarta, como se hace .poll para sacarlo de la cola no es necesario hacer nada
+       
+    }
+
+    private boolean esNormal() {
+        int numero =ThreadLocalRandom.current().nextInt(0, 20);
+        return numero % 4 == 0;
+    }
+
+    @Override
+    public void run() {
+
+        boolean condicionSalida = true;
+
+        while (condicionSalida) {
+
+            while (buzonAlertas.estaVacio()) {
+                Thread.yield();
+            }
+            Evento evento = buzonAlertas.sacarEvento();
+
+            if (evento.check()) {
+                condicionSalida = false;
+            } else  {
+                EnviarEvento(evento);   
+            }  
+        }
+         System.out.println("Administrador " + id + " terminó.");
+    }
     
 }
