@@ -42,18 +42,20 @@ public class Main {
         List<Sensor> sensores = new ArrayList<>();
         int totalEventos = 0;
 
+        Sensor.configurarClase(100, ns);
+
         for (int i = 0; i < ni; i++) {
             int eventos = baseEventos * (i + 1);
             totalEventos += eventos;
 
-            sensores.add(new Sensor(i + 1, eventos, buzonEntrada, ns));
+            sensores.add(new Sensor(i + 1, buzonEntrada));
         }
 
         // Broker
-        Broker broker = new Broker(buzonEntrada, buzonAlerta, buzonClasificacion, totalEventos);
+        Broker broker = new Broker(1, totalEventos, ni, buzonEntrada, buzonAlerta, buzonClasificacion);
 
         // Administrador
-        Administrador administrador = new Administrador(buzonAlerta, buzonClasificacion, nc);
+        Administrador administrador = new Administrador(1,buzonAlerta, buzonClasificacion);
 
         // Clasificadores
         List<Clasificador> clasificadores = new ArrayList<>();
